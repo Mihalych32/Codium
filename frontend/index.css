@@ -1,0 +1,19 @@
+.body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: blue;
+}
+
+.header {
+  display: block;
+  border: 1px solid red;
+  color: red;
+}
+
+/* .code-block {
+  width: 500px;
+  height: 400px;
+  background: #000;
+  color: aliceblue;
+} */
