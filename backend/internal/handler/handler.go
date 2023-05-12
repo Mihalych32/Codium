@@ -20,45 +20,46 @@ func NewHandler(e executor.Executor) *Handler {
 }
 
 func (h *Handler) HandleSubmit(w http.ResponseWriter, r *http.Request) {
-	reqBody, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"error": "Invalid request body"})
-		return
-	}
 
-	var requestBody entity.ExecuteRequest
-	json.Unmarshal(reqBody, &requestBody)
+	if r.Method == "POST" {
+		w.Header().Set("Content-Type", "application/json")
 
-	if requestBody.Content == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"error": "content was not provided"})
-		return
-	}
-	if requestBody.LangSlug == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"error": "lang_slug was not provided"})
-		return
-	}
-
-	switch requestBody.LangSlug {
-	case "cpp":
-		{
-			_, err := h.execCPP.ExecuteFromSource(requestBody.Content)
-			if err != nil {
-				w.WriteHeader(http.StatusBadRequest)
-				json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
-				return
-			}
-			w.WriteHeader(http.StatusOK)
-			json.NewEncoder(w).Encode(map[string]string{"Result": ""})
+		reqBody, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Error: %s", err.Error()), http.StatusInternalServerError)
 			return
 		}
-	default:
-		{
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(map[string]string{"error": fmt.Sprintf("Language '%s' is not supported right now", requestBody.LangSlug)})
 
+		var requestBody entity.ExecuteRequest
+		json.Unmarshal(reqBody, &requestBody)
+
+		if requestBody.Content == "" {
+			http.Error(w, "Field 'content' was not provided", http.StatusBadRequest)
+			return
 		}
+		if requestBody.LangSlug == "" {
+			http.Error(w, "Field 'lang_slug' was not provided", http.StatusBadRequest)
+			return
+		}
+
+		switch requestBody.LangSlug {
+		case "cpp":
+			{
+				_, err := h.execCPP.ExecuteFromSource(requestBody.Content)
+				if err != nil {
+					http.Error(w, fmt.Sprintf("Error: %s", err.Error()), http.StatusInternalServerError)
+					return
+				}
+				w.WriteHeader(http.StatusOK)
+				json.NewEncoder(w).Encode(map[string]string{"Result": ""})
+				return
+			}
+		default:
+			{
+				http.Error(w, fmt.Sprintf("Language '%s' is not supported", requestBody.LangSlug), http.StatusBadRequest)
+			}
+		}
+	} else {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }

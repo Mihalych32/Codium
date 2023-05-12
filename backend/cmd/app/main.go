@@ -14,7 +14,7 @@ func main() {
 		fmt.Println(err.Error())
 	}
 
-	http.HandleFunc("/submit/", server.H.HandleSubmit)
+	http.HandleFunc("api/submit/", server.H.HandleSubmit)
 
 	err = http.ListenAndServe(":8080", nil)
 }
