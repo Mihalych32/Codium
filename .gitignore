@@ -4,3 +4,4 @@ backend/main
 out
 **.out
 **.cpp
+**.txt
