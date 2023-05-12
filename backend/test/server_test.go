@@ -62,6 +62,20 @@ func TestHandleSubmit(t *testing.T) {
 			want:       `{"Result":"Hello world!\n"}`,
 			statusCode: http.StatusOK,
 		},
+		{
+			name:       "Print numbers using a for loop",
+			method:     http.MethodPost,
+			input:      &entity.ExecuteRequest{Content: "#include <iostream>\n\nint main() {\n\tfor (int i = 0; i < 5; i++) std::cout << i << '\\n';\n\treturn 0;\n}", LangSlug: "cpp"},
+			want:       `{"Result":"0\n1\n2\n3\n4\n"}`,
+			statusCode: http.StatusOK,
+		},
+		{
+			name:       "Call a function",
+			method:     http.MethodPost,
+			input:      &entity.ExecuteRequest{Content: "#include <iostream>\nusing namespace std;\n\nint num_sum(int a, int b) {\n\treturn a + b;\n}\n\nint main() {\n\tint res = num_sum(2, 3);\n\tstd::cout << res << '\\n';\n\treturn 0;\n}", LangSlug: "cpp"},
+			want:       `{"Result":"5\n"}`,
+			statusCode: http.StatusOK,
+		},
 	}
 
 	execcpp := executor.NewExecutorCPP()
