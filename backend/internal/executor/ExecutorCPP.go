@@ -1,6 +1,6 @@
 package executor
 
-import "fmt"
+import "io/ioutil"
 
 type ExecutorCPP struct{}
 
@@ -10,8 +10,10 @@ func NewExecutorCPP() *ExecutorCPP {
 
 func (e *ExecutorCPP) ExecuteFromSource(source string) (output string, err error) {
 
-	fmt.Println("Executing CPP source code:")
-	fmt.Println(source)
+	err = ioutil.WriteFile("source.cpp", []byte(source), 0644)
+	if err != nil {
+		return "", err
+	}
 
 	return "", nil
 }

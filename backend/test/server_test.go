@@ -30,7 +30,7 @@ func TestHandleSubmit(t *testing.T) {
 		{
 			name:       "Only content provided",
 			method:     http.MethodPost,
-			input:      &entity.ExecuteRequest{Content: "#include<iostream>\n\nint main() {\n\treturn0;\n}"},
+			input:      &entity.ExecuteRequest{Content: "#include <iostream>\n\nint main() {\n\treturn 0;\n}"},
 			want:       "Field 'lang_slug' was not provided",
 			statusCode: http.StatusBadRequest,
 		},
@@ -44,7 +44,7 @@ func TestHandleSubmit(t *testing.T) {
 		{
 			name:       "Unsupported lang_slug provided",
 			method:     http.MethodPost,
-			input:      &entity.ExecuteRequest{Content: "#include<iostream>\n\nint main() {\n\treturn0;\n}", LangSlug: "rs"},
+			input:      &entity.ExecuteRequest{Content: "#include <iostream>\n\nint main() {\n\treturn 0;\n}", LangSlug: "rs"},
 			want:       "Language 'rs' is not supported",
 			statusCode: http.StatusBadRequest,
 		},
@@ -58,7 +58,7 @@ func TestHandleSubmit(t *testing.T) {
 		{
 			name:       "Normal request",
 			method:     http.MethodPost,
-			input:      &entity.ExecuteRequest{Content: "#include<iostream>\n\nint main() {\n\treturn0;\n}", LangSlug: "cpp"},
+			input:      &entity.ExecuteRequest{Content: "#include <iostream>\n\nint main() {\n\tstd::cout << \"Hello world!\" << '\\n';\n\treturn 0;\n}", LangSlug: "cpp"},
 			want:       `{"Result":""}`,
 			statusCode: http.StatusOK,
 		},
