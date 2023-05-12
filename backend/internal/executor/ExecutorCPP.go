@@ -1,6 +1,9 @@
 package executor
 
-import "io/ioutil"
+import (
+	"io/ioutil"
+	"os/exec"
+)
 
 type ExecutorCPP struct{}
 
@@ -15,5 +18,22 @@ func (e *ExecutorCPP) ExecuteFromSource(source string) (output string, err error
 		return "", err
 	}
 
-	return "", nil
+	cmd := exec.Command("gcc", "-lstdc++", "source.cpp")
+	err = cmd.Run()
+	if err != nil {
+		return "", err
+	}
+
+	cmd = exec.Command("chmod", "+x", "a.out")
+	err = cmd.Run()
+	if err != nil {
+		return "", err
+	}
+
+	out, err := exec.Command("./a.out").Output()
+	if err != nil {
+		return "", err
+	}
+
+	return string(out), nil
 }

@@ -56,10 +56,10 @@ func TestHandleSubmit(t *testing.T) {
 			statusCode: http.StatusMethodNotAllowed,
 		},
 		{
-			name:       "Normal request",
+			name:       "Hello world",
 			method:     http.MethodPost,
 			input:      &entity.ExecuteRequest{Content: "#include <iostream>\n\nint main() {\n\tstd::cout << \"Hello world!\" << '\\n';\n\treturn 0;\n}", LangSlug: "cpp"},
-			want:       `{"Result":""}`,
+			want:       `{"Result":"Hello world!\n"}`,
 			statusCode: http.StatusOK,
 		},
 	}

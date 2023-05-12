@@ -45,13 +45,13 @@ func (h *Handler) HandleSubmit(w http.ResponseWriter, r *http.Request) {
 		switch requestBody.LangSlug {
 		case "cpp":
 			{
-				_, err := h.execCPP.ExecuteFromSource(requestBody.Content)
+				result, err := h.execCPP.ExecuteFromSource(requestBody.Content)
 				if err != nil {
 					http.Error(w, fmt.Sprintf("Error: %s", err.Error()), http.StatusInternalServerError)
 					return
 				}
 				w.WriteHeader(http.StatusOK)
-				json.NewEncoder(w).Encode(map[string]string{"Result": ""})
+				json.NewEncoder(w).Encode(map[string]string{"Result": result})
 				return
 			}
 		default:
