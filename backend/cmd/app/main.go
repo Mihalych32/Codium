@@ -1,7 +1,20 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"net/http"
+	"server/internal/server"
+)
 
 func main() {
-	fmt.Println("Starting server...")
+
+	server, err := server.NewServer()
+	if err != nil {
+		fmt.Println("Could not start the server:")
+		fmt.Println(err.Error())
+	}
+
+	http.HandleFunc("/submit/", server.H.HandleSubmit)
+
+	err = http.ListenAndServe(":8080", nil)
 }
