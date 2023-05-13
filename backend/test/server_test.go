@@ -28,14 +28,14 @@ func TestHandleSubmit(t *testing.T) {
 			statusCode: http.StatusBadRequest,
 		},
 		{
-			name:       "Only content provided",
+			name:       "Field 'lang_slug' not provided",
 			method:     http.MethodPost,
 			input:      &entity.ExecuteRequest{Content: "#include <iostream>\n\nint main() {\n\treturn 0;\n}"},
 			want:       "Field 'lang_slug' was not provided",
 			statusCode: http.StatusBadRequest,
 		},
 		{
-			name:       "Only lang_slug provided",
+			name:       "Field 'content' not provided",
 			method:     http.MethodPost,
 			input:      &entity.ExecuteRequest{LangSlug: "cpp"},
 			want:       "Field 'content' was not provided",
@@ -56,7 +56,7 @@ func TestHandleSubmit(t *testing.T) {
 			statusCode: http.StatusMethodNotAllowed,
 		},
 		{
-			name:       "Hello world",
+			name:       "Hello world program",
 			method:     http.MethodPost,
 			input:      &entity.ExecuteRequest{Content: "#include <iostream>\n\nint main() {\n\tstd::cout << \"Hello world!\" << '\\n';\n\treturn 0;\n}", LangSlug: "cpp"},
 			want:       `{"Result":"Hello world!\n"}`,
