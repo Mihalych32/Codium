@@ -102,6 +102,7 @@ func (e *ExecutorCPP) ExecuteFromSource(source string) (output string, err error
 	if err := cli.ContainerStart(ctx, resp_create.ID, types.ContainerStartOptions{}); err != nil {
 		return "", err, entity.PROCESS_SERVER_ERROR
 	}
+	defer cli.ContainerRemove(ctx, resp_create.ID, types.ContainerRemoveOptions{})
 
 	reader, err := cli.ContainerLogs(ctx, resp_create.ID, types.ContainerLogsOptions{ShowStdout: true, ShowStderr: true})
 	if err != nil {
@@ -111,11 +112,6 @@ func (e *ExecutorCPP) ExecuteFromSource(source string) (output string, err error
 	logsAsBytes, err := io.ReadAll(reader)
 	if err != nil {
 		return "", nil, entity.PROCESS_SERVER_ERROR
-	}
-
-	err = cli.ContainerRemove(ctx, resp_create.ID, types.ContainerRemoveOptions{})
-	if err != nil {
-		return "", err, entity.PROCESS_SERVER_ERROR
 	}
 
 	result := string(logsAsBytes)

@@ -9,6 +9,7 @@ import (
 	"server/internal/entity"
 	"server/internal/executor"
 	"server/internal/handler"
+	"server/pkg/logger"
 	"strings"
 	"testing"
 
@@ -61,21 +62,21 @@ func TestHandleSubmit(t *testing.T) {
 		{
 			name:       "Uncompilable code",
 			method:     http.MethodPost,
-			input:      &entity.ExecuteRequest{Content: "#include <iostream>\n\nint main() {", LangSlug: "cpp"},
+			input:      &entity.ExecuteRequest{Content: "#include <iostream>\nint main(){", LangSlug: "cpp"},
 			want:       ``,
 			statusCode: http.StatusUnprocessableEntity,
 		},
 		{
 			name:       "Hello world program",
 			method:     http.MethodPost,
-			input:      &entity.ExecuteRequest{Content: "#include <iostream>\n\nint main() {\n\tstd::cout << \"Hello world!\" << '\\n';\n\treturn 0;\n}", LangSlug: "cpp"},
+			input:      &entity.ExecuteRequest{Content: "#include <iostream>\nint main(){std::cout<<\"Hello world!\"<<'\\n';return 0;}", LangSlug: "cpp"},
 			want:       `{"Result":"Hello world!\n"}`,
 			statusCode: http.StatusOK,
 		},
 		{
 			name:       "Print numbers using a for loop",
 			method:     http.MethodPost,
-			input:      &entity.ExecuteRequest{Content: "#include <iostream>\n\nint main() {\n\tfor (int i = 0; i < 5; i++) std::cout << i << '\\n';\n\treturn 0;\n}", LangSlug: "cpp"},
+			input:      &entity.ExecuteRequest{Content: "#include <iostream>\nint main(){for(int i=0;i<5;i++)std::cout<<i<<'\\n';return 0;}", LangSlug: "cpp"},
 			want:       `{"Result":"0\n1\n2\n3\n4\n"}`,
 			statusCode: http.StatusOK,
 		},
@@ -93,6 +94,7 @@ func TestHandleSubmit(t *testing.T) {
 	}
 
 	execcpp := executor.NewExecutorCPP()
+	lgr := logger.NewLogger()
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
@@ -103,7 +105,7 @@ func TestHandleSubmit(t *testing.T) {
 			request := httptest.NewRequest(tc.method, "http://localhost:8080/api/submit/", body)
 			responseRecorder := httptest.NewRecorder()
 
-			h := handler.NewHandler(execcpp)
+			h := handler.NewHandler(execcpp, lgr)
 			h.HandleSubmit(responseRecorder, request)
 
 			if responseRecorder.Code != tc.statusCode {
