@@ -45,10 +45,24 @@ func (h *Handler) HandleSubmit(w http.ResponseWriter, r *http.Request) {
 		switch requestBody.LangSlug {
 		case "cpp":
 			{
-				result, err := h.execCPP.ExecuteFromSource(requestBody.Content)
-				if err != nil {
-					http.Error(w, fmt.Sprintf("Error: %s", err.Error()), http.StatusInternalServerError)
-					return
+				result, err, errcode := h.execCPP.ExecuteFromSource(requestBody.Content)
+				if errcode != entity.PROCESS_OK {
+					switch errcode {
+					case entity.PROCESS_COMPILE_ERROR:
+						{
+							http.Error(w, fmt.Sprintf("Compile error: %s", err.Error()), http.StatusUnprocessableEntity)
+							return
+						}
+					case entity.PROCESS_RUNTIME_ERROR:
+						{
+							http.Error(w, fmt.Sprintf("Runtime error: %s", err.Error()), http.StatusUnprocessableEntity)
+							return
+						}
+					default:
+						{
+							http.Error(w, "Server error", http.StatusInternalServerError)
+						}
+					}
 				}
 				w.WriteHeader(http.StatusOK)
 				json.NewEncoder(w).Encode(map[string]string{"Result": result})

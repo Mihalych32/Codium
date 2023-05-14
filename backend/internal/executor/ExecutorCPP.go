@@ -8,6 +8,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"server/internal/entity"
 	"strings"
 	"time"
 
@@ -23,61 +24,50 @@ func NewExecutorCPP() *ExecutorCPP {
 	return &ExecutorCPP{}
 }
 
-type ErrorLine struct {
-	Error       string      `json:"error"`
-	ErrorDetail ErrorDetail `json:"errorDetail"`
-}
-
-type ErrorDetail struct {
-	Message string `json:"message"`
-}
-
 type BuildResult struct {
 	Stream string `json:"stream"`
 }
 
-func getImageId(rd io.Reader) (string, error) {
+func getImageId(rd io.Reader) (string, error, int) {
 	var lastLine string
 	buildRes := &BuildResult{}
 
 	scanner := bufio.NewScanner(rd)
 	for scanner.Scan() {
-		lastLine = scanner.Text()
+		var line string = scanner.Text()
+		if line[2:8] == "stream" {
+			lastLine = line
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return "", err, entity.PROCESS_SERVER_ERROR
 	}
 
 	json.Unmarshal([]byte(lastLine), buildRes)
 	if len(buildRes.Stream) != 32 || len(buildRes.Stream) < 32 {
-		return "", fmt.Errorf("Build failed")
+
+		return "", fmt.Errorf("%s\n", buildRes.Stream), entity.PROCESS_COMPILE_ERROR
 	}
 
-	errLine := &ErrorLine{}
-	json.Unmarshal([]byte(lastLine), errLine)
-	if errLine.Error != "" {
-		return "", fmt.Errorf("Error occured")
-	}
-
-	if err := scanner.Err(); err != nil {
-		return "", err
-	}
-
-	return buildRes.Stream[19:31], nil
+	return buildRes.Stream[19:31], nil, entity.PROCESS_OK
 }
 
-func (e *ExecutorCPP) ExecuteFromSource(source string) (output string, err error) {
+func (e *ExecutorCPP) ExecuteFromSource(source string) (output string, err error, errcode int) {
 	goRoot := os.Getenv("GO_ROOT")
 	if goRoot == "" {
-		return "", fmt.Errorf("Could not find GO_ROOT variable in .env")
+		return "", fmt.Errorf("Could not find GO_ROOT variable in .env"), entity.PROCESS_SERVER_ERROR
 	}
 
 	err = ioutil.WriteFile(fmt.Sprintf("%s/source.cpp", goRoot), []byte(source), 0644)
 	if err != nil {
-		return "", err
+		return "", err, entity.PROCESS_SERVER_ERROR
 	}
 	defer os.Remove(fmt.Sprintf("%s/source.cpp", goRoot))
 
 	cli, err := client.NewEnvClient()
 	if err != nil {
-		return "", err
+		return "", err, entity.PROCESS_SERVER_ERROR
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
@@ -85,7 +75,7 @@ func (e *ExecutorCPP) ExecuteFromSource(source string) (output string, err error
 
 	tar, err := archive.TarWithOptions("../", &archive.TarOptions{})
 	if err != nil {
-		return "", err
+		return "", err, entity.PROCESS_SERVER_ERROR
 	}
 
 	buildOptions := types.ImageBuildOptions{
@@ -95,37 +85,37 @@ func (e *ExecutorCPP) ExecuteFromSource(source string) (output string, err error
 
 	res, err := cli.ImageBuild(ctx, tar, buildOptions)
 	if err != nil {
-		return "", err
+		return "", err, entity.PROCESS_SERVER_ERROR
 	}
 	defer res.Body.Close()
 
-	imageid, err := getImageId(res.Body)
-	if err != nil {
-		return "", err
+	imageid, err, errcode := getImageId(res.Body)
+	if errcode != 0 {
+		return "", err, errcode
 	}
 
 	resp_create, err := cli.ContainerCreate(ctx, &container.Config{Image: imageid}, &container.HostConfig{}, nil, nil, "cpp_executor")
 	if err != nil {
-		return "", err
+		return "", err, entity.PROCESS_SERVER_ERROR
 	}
 
 	if err := cli.ContainerStart(ctx, resp_create.ID, types.ContainerStartOptions{}); err != nil {
-		return "", err
+		return "", err, entity.PROCESS_SERVER_ERROR
 	}
 
 	reader, err := cli.ContainerLogs(ctx, resp_create.ID, types.ContainerLogsOptions{ShowStdout: true, ShowStderr: true})
 	if err != nil {
-		return "", err
+		return "", err, entity.PROCESS_SERVER_ERROR
 	}
 
 	logsAsBytes, err := io.ReadAll(reader)
 	if err != nil {
-		return "", nil
+		return "", nil, entity.PROCESS_SERVER_ERROR
 	}
 
 	err = cli.ContainerRemove(ctx, resp_create.ID, types.ContainerRemoveOptions{})
 	if err != nil {
-		return "", err
+		return "", err, entity.PROCESS_SERVER_ERROR
 	}
 
 	result := string(logsAsBytes)
@@ -134,5 +124,5 @@ func (e *ExecutorCPP) ExecuteFromSource(source string) (output string, err error
 	result = strings.ReplaceAll(result, "\u0002", "")
 	result = strings.Replace(result, "\r", "", 1)
 
-	return result, nil
+	return result, nil, entity.PROCESS_OK
 }

@@ -59,6 +59,13 @@ func TestHandleSubmit(t *testing.T) {
 			statusCode: http.StatusMethodNotAllowed,
 		},
 		{
+			name:       "Uncompilable code",
+			method:     http.MethodPost,
+			input:      &entity.ExecuteRequest{Content: "#include <iostream>\n\nint main() {", LangSlug: "cpp"},
+			want:       ``,
+			statusCode: http.StatusUnprocessableEntity,
+		},
+		{
 			name:       "Hello world program",
 			method:     http.MethodPost,
 			input:      &entity.ExecuteRequest{Content: "#include <iostream>\n\nint main() {\n\tstd::cout << \"Hello world!\" << '\\n';\n\treturn 0;\n}", LangSlug: "cpp"},
@@ -102,8 +109,11 @@ func TestHandleSubmit(t *testing.T) {
 			if responseRecorder.Code != tc.statusCode {
 				t.Errorf("Want status %d, got %d", tc.statusCode, responseRecorder.Code)
 			}
-			if strings.TrimSpace(responseRecorder.Body.String()) != tc.want {
-				t.Errorf("Want response '%s', got '%s'", tc.want, responseRecorder.Body)
+
+			if tc.statusCode != http.StatusUnprocessableEntity {
+				if strings.TrimSpace(responseRecorder.Body.String()) != tc.want {
+					t.Errorf("Want response '%s', got '%s'", tc.want, responseRecorder.Body)
+				}
 			}
 		})
 	}
