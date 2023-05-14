@@ -89,10 +89,8 @@ func (e *ExecutorCPP) ExecuteFromSource(source string) (output string, err error
 	}
 
 	buildOptions := types.ImageBuildOptions{
-		Dockerfile:  "DockerfileCPP",
-		Remove:      true,
-		ForceRemove: true,
-		NoCache:     true,
+		Dockerfile: "DockerfileCPP",
+		Remove:     true,
 	}
 
 	res, err := cli.ImageBuild(ctx, tar, buildOptions)
