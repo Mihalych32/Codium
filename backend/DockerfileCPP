@@ -2,7 +2,7 @@ FROM gcc:latest
 
 RUN apt-get update
 
-COPY test/source.cpp .
+COPY source.cpp .
 RUN g++ source.cpp
 
 ENTRYPOINT ["./a.out"]

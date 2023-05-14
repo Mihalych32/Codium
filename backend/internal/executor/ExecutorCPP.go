@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"os"
 	"strings"
 	"time"
 
@@ -45,7 +46,7 @@ func getImageId(rd io.Reader) (string, error) {
 	}
 
 	json.Unmarshal([]byte(lastLine), buildRes)
-	if len(buildRes.Stream) != 32 {
+	if len(buildRes.Stream) != 32 || len(buildRes.Stream) < 32 {
 		return "", fmt.Errorf("Build failed")
 	}
 
@@ -63,8 +64,12 @@ func getImageId(rd io.Reader) (string, error) {
 }
 
 func (e *ExecutorCPP) ExecuteFromSource(source string) (output string, err error) {
+	goRoot := os.Getenv("GO_ROOT")
+	if goRoot == "" {
+		return "", fmt.Errorf("Could not find GO_ROOT variable in .env")
+	}
 
-	err = ioutil.WriteFile("source.cpp", []byte(source), 0644)
+	err = ioutil.WriteFile(fmt.Sprintf("%s/source.cpp", goRoot), []byte(source), 0644)
 	if err != nil {
 		return "", err
 	}

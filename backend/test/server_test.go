@@ -3,6 +3,7 @@ package test
 import (
 	"bytes"
 	"encoding/json"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"server/internal/entity"
@@ -10,6 +11,8 @@ import (
 	"server/internal/handler"
 	"strings"
 	"testing"
+
+	"github.com/joho/godotenv"
 )
 
 func TestHandleSubmit(t *testing.T) {
@@ -76,6 +79,10 @@ func TestHandleSubmit(t *testing.T) {
 			want:       `{"Result":"5\n"}`,
 			statusCode: http.StatusOK,
 		},
+	}
+
+	if err := godotenv.Load("../.env"); err != nil {
+		log.Fatal("Could not load the .env file")
 	}
 
 	execcpp := executor.NewExecutorCPP()
