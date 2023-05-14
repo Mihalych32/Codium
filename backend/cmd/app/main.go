@@ -1,21 +1,23 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 	"server/internal/server"
+
+	"github.com/fatih/color"
+	"github.com/joho/godotenv"
 )
 
 func main() {
-
-	server, err := server.NewServer()
-	if err != nil {
-		fmt.Println("Could not start the server:")
-		fmt.Println(err.Error())
+	if err := godotenv.Load(".env"); err != nil {
+		log.Fatal(color.RedString("FATAL ERROR: %s", err.Error()))
 	}
+
+	server := server.NewServer()
 
 	http.HandleFunc("/api/submit/", server.H.HandleSubmit)
 
-	fmt.Println("Server started")
-	err = http.ListenAndServe(":8080", nil)
+	log.Println(color.GreenString("SERVER STARTED"))
+	http.ListenAndServe(":8080", nil)
 }

@@ -3,13 +3,17 @@ package test
 import (
 	"bytes"
 	"encoding/json"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"server/internal/entity"
 	"server/internal/executor"
 	"server/internal/handler"
+	"server/pkg/logger"
 	"strings"
 	"testing"
+
+	"github.com/joho/godotenv"
 )
 
 func TestHandleSubmit(t *testing.T) {
@@ -28,14 +32,14 @@ func TestHandleSubmit(t *testing.T) {
 			statusCode: http.StatusBadRequest,
 		},
 		{
-			name:       "Only content provided",
+			name:       "Field 'lang_slug' not provided",
 			method:     http.MethodPost,
 			input:      &entity.ExecuteRequest{Content: "#include <iostream>\n\nint main() {\n\treturn 0;\n}"},
 			want:       "Field 'lang_slug' was not provided",
 			statusCode: http.StatusBadRequest,
 		},
 		{
-			name:       "Only lang_slug provided",
+			name:       "Field 'content' not provided",
 			method:     http.MethodPost,
 			input:      &entity.ExecuteRequest{LangSlug: "cpp"},
 			want:       "Field 'content' was not provided",
@@ -56,16 +60,23 @@ func TestHandleSubmit(t *testing.T) {
 			statusCode: http.StatusMethodNotAllowed,
 		},
 		{
-			name:       "Hello world",
+			name:       "Uncompilable code",
 			method:     http.MethodPost,
-			input:      &entity.ExecuteRequest{Content: "#include <iostream>\n\nint main() {\n\tstd::cout << \"Hello world!\" << '\\n';\n\treturn 0;\n}", LangSlug: "cpp"},
+			input:      &entity.ExecuteRequest{Content: "#include <iostream>\nint main(){", LangSlug: "cpp"},
+			want:       ``,
+			statusCode: http.StatusUnprocessableEntity,
+		},
+		{
+			name:       "Hello world program",
+			method:     http.MethodPost,
+			input:      &entity.ExecuteRequest{Content: "#include <iostream>\nint main(){std::cout<<\"Hello world!\"<<'\\n';return 0;}", LangSlug: "cpp"},
 			want:       `{"Result":"Hello world!\n"}`,
 			statusCode: http.StatusOK,
 		},
 		{
 			name:       "Print numbers using a for loop",
 			method:     http.MethodPost,
-			input:      &entity.ExecuteRequest{Content: "#include <iostream>\n\nint main() {\n\tfor (int i = 0; i < 5; i++) std::cout << i << '\\n';\n\treturn 0;\n}", LangSlug: "cpp"},
+			input:      &entity.ExecuteRequest{Content: "#include <iostream>\nint main(){for(int i=0;i<5;i++)std::cout<<i<<'\\n';return 0;}", LangSlug: "cpp"},
 			want:       `{"Result":"0\n1\n2\n3\n4\n"}`,
 			statusCode: http.StatusOK,
 		},
@@ -78,7 +89,12 @@ func TestHandleSubmit(t *testing.T) {
 		},
 	}
 
+	if err := godotenv.Load("../.env"); err != nil {
+		log.Fatal("Could not load the .env file")
+	}
+
 	execcpp := executor.NewExecutorCPP()
+	lgr := logger.NewLogger()
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
@@ -89,14 +105,17 @@ func TestHandleSubmit(t *testing.T) {
 			request := httptest.NewRequest(tc.method, "http://localhost:8080/api/submit/", body)
 			responseRecorder := httptest.NewRecorder()
 
-			h := handler.NewHandler(execcpp)
+			h := handler.NewHandler(execcpp, lgr)
 			h.HandleSubmit(responseRecorder, request)
 
 			if responseRecorder.Code != tc.statusCode {
 				t.Errorf("Want status %d, got %d", tc.statusCode, responseRecorder.Code)
 			}
-			if strings.TrimSpace(responseRecorder.Body.String()) != tc.want {
-				t.Errorf("Want response '%s', got '%s'", tc.want, responseRecorder.Body)
+
+			if tc.statusCode != http.StatusUnprocessableEntity {
+				if strings.TrimSpace(responseRecorder.Body.String()) != tc.want {
+					t.Errorf("Want response '%s', got '%s'", tc.want, responseRecorder.Body)
+				}
 			}
 		})
 	}
