@@ -73,6 +73,7 @@ func (e *ExecutorCPP) ExecuteFromSource(source string) (output string, err error
 	if err != nil {
 		return "", err
 	}
+	defer os.Remove(fmt.Sprintf("%s/source.cpp", goRoot))
 
 	cli, err := client.NewEnvClient()
 	if err != nil {
