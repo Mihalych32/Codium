@@ -1,24 +1,33 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
-    <link rel="stylesheet" href="index.css">
-    <title>Codium</title>
-  </head>
-  <body>
-    <div class="body">
-      <header class="header">
-        <h1>Codium</h1>
-      </header>
-      <div class="content">
-        <div class="code-block">
-          <textarea name="code-area" id="1" cols="30" rows="10" placeholder="Ваш код"></textarea>
-        </div>
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+  <link rel="stylesheet" href="index.css">
+  <title>Codium</title>
+</head>
+
+<body>
+  <div class="body">
+    <header class="header">
+      <h1>Codium</h1>
+    </header>
+    <div class="content">
+      <div class="client-block">
+        <textarea class="code-area" id="codeArea" wrap="off" placeholder="Введите свой код здесь..."></textarea>
       </div>
-      <footer class="footer">
-        <button class="submit-button">Submit</button>
-      </footer>
+      <div class="server-block">
+        <div class="code-area"></div>
+      </div>
     </div>
-  </body>
+    <footer class="footer">
+      <button class="submit-button">
+        Submit
+      </button>
+    </footer>
+  </div>
+  <script src="scripts.js"></script>
+</body>
+
 </html>
