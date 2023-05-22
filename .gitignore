@@ -1,3 +1,7 @@
 frontend/node_modules/
 frontend/package-lock.json
-out
+backend/main
+**.out
+**.cpp
+**.txt
+**.env
