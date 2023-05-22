@@ -78,6 +78,12 @@ func (e *ExecutorCPP) ExecuteFromSource(source string) (output string, err error
 		return "", err, entity.PROCESS_SERVER_ERROR
 	}
 
+	mydir, err := os.Getwd()
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(mydir)
+
 	buildOptions := types.ImageBuildOptions{
 		Dockerfile: "DockerfileCPP",
 		Remove:     true,

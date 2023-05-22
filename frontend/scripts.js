@@ -1,3 +1,6 @@
+
+let text = "";
+
 document.addEventListener('keydown', function (event) {
   if (event.key === 'Tab') {
     event.preventDefault();
@@ -19,29 +22,29 @@ textarea.addEventListener('keydown', function (event) {
   }
 });
 
-let text = "";
 textarea.addEventListener('input', function (event) {
   text = this.value;
 });
 
 const submitCode = async () => {
+	console.log('submitting code')
 	const codeResponse = await fetch(`http://localhost:8080/api/submit/`, {
     method: "POST",
-    body: {
-      lang_slug: "cpp",
-      content: text
-    }
+	body: JSON.stringify({
+      	lang_slug: "cpp",
+      	content: text
+    })
   });
 
   if (codeResponse.status === 200) {
     const serverAnswer = await codeResponse.json();
     const serverResponseArea = document.getElementById('serverResponse');
-    serverResponseArea.innerHTML = serverAnswer;
+    serverResponseArea.innerHTML = serverAnswer.Result;
   } else {
-    const serverResponseArea = document.getElementById('serverResponse');
-    serverResponseArea = "Compilation error!"
+    let serverResponseArea = document.getElementById('serverResponse');
+	serverResponseArea = "Compilation error!";
   }
 }
 
-let submitButton = document.querySelector('submit-button');
-submitButton = addEventListener('click', submitCode);
+let submitButton = document.getElementById('sbmt');
+submitButton.addEventListener('click', submitCode);
