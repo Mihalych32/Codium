@@ -19,9 +19,9 @@ textarea.addEventListener('keydown', function (event) {
   }
 });
 
-
+let text = "";
 textarea.addEventListener('input', function (event) {
-  let text = this.value;
+  text = this.value;
 });
 
 const submitCode = async () => {
