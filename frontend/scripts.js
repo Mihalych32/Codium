@@ -25,7 +25,7 @@ textarea.addEventListener('input', function (event) {
 });
 
 const submitCode = async () => {
-  const codeResponse = await fetch(`${process.env.BACKEND_URL}/api/submit/`, {
+	const codeResponse = await fetch(`http://localhost:8080/api/submit/`, {
     method: "POST",
     body: {
       lang_slug: "cpp",
