@@ -56,8 +56,10 @@ func (h *Handler) HandleSubmit(w http.ResponseWriter, r *http.Request) {
 					switch errcode {
 					case entity.PROCESS_COMPILE_ERROR:
 						{
-							http.Error(w, fmt.Sprintf("Compile error: %s", err.Error()), http.StatusUnprocessableEntity)
-							h.lgr.SubmitError(fmt.Sprintf("Compile error: %s\n", err.Error()))
+							w.WriteHeader(http.StatusUnprocessableEntity)
+							json.NewEncoder(w).Encode(map[string]string{"Result": result})
+
+							h.lgr.SubmitError("Compile error")
 							return
 						}
 					case entity.PROCESS_RUNTIME_ERROR:

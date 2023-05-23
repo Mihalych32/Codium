@@ -27,23 +27,24 @@ textarea.addEventListener('input', function (event) {
 });
 
 const submitCode = async () => {
-	console.log('submitting code')
 	const codeResponse = await fetch(`http://localhost:8080/api/submit/`, {
     method: "POST",
 	body: JSON.stringify({
       	lang_slug: "cpp",
       	content: text
-    })
-  });
+    	})
+  	});
 
-  if (codeResponse.status === 200) {
-    const serverAnswer = await codeResponse.json();
-    const serverResponseArea = document.getElementById('serverResponse');
-    serverResponseArea.innerHTML = serverAnswer.Result;
-  } else {
-    let serverResponseArea = document.getElementById('serverResponse');
-	serverResponseArea = "Compilation error!";
-  }
+  	if (codeResponse.status === 200) {
+    	const serverAnswer = await codeResponse.json();
+    	let result = serverAnswer.Result;
+		const serverResponseArea = document.getElementById('serverResponse');
+   		serverResponseArea.innerText = serverAnswer.Result;
+ 	} else if (codeResponse.status === 422) {
+    	const serverAnswer = await codeResponse.json();
+    	const serverResponseArea = document.getElementById('serverResponse');
+		serverResponseArea.innerText = serverAnswer.Result;
+  	}
 }
 
 let submitButton = document.getElementById('sbmt');

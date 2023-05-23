@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"server/internal/entity"
 	"strings"
@@ -41,13 +42,14 @@ func getImageId(rd io.Reader) (string, error, int) {
 	}
 
 	if err := scanner.Err(); err != nil {
+		log.Printf("Unable to scan container's stream")
 		return "", err, entity.PROCESS_SERVER_ERROR
 	}
 
 	json.Unmarshal([]byte(lastLine), buildRes)
 	if len(buildRes.Stream) != 32 || len(buildRes.Stream) < 32 {
-
-		return "", fmt.Errorf("%s\n", buildRes.Stream), entity.PROCESS_COMPILE_ERROR
+		log.Printf("Unable to compile cpp source code")
+		return buildRes.Stream, fmt.Errorf("%s\n", buildRes.Stream), entity.PROCESS_COMPILE_ERROR
 	}
 
 	return buildRes.Stream[19:31], nil, entity.PROCESS_OK
@@ -73,16 +75,10 @@ func (e *ExecutorCPP) ExecuteFromSource(source string) (output string, err error
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
 	defer cancel()
 
-	tar, err := archive.TarWithOptions("../", &archive.TarOptions{})
+	tar, err := archive.TarWithOptions(".", &archive.TarOptions{})
 	if err != nil {
 		return "", err, entity.PROCESS_SERVER_ERROR
 	}
-
-	mydir, err := os.Getwd()
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(mydir)
 
 	buildOptions := types.ImageBuildOptions{
 		Dockerfile: "DockerfileCPP",
@@ -91,21 +87,25 @@ func (e *ExecutorCPP) ExecuteFromSource(source string) (output string, err error
 
 	res, err := cli.ImageBuild(ctx, tar, buildOptions)
 	if err != nil {
+		fmt.Println("build image error")
 		return "", err, entity.PROCESS_SERVER_ERROR
 	}
 	defer res.Body.Close()
 
 	imageid, err, errcode := getImageId(res.Body)
-	if errcode != 0 {
-		return "", err, errcode
+	if errcode == entity.PROCESS_COMPILE_ERROR {
+		res := fmt.Sprintf("%s", err.Error()[5:len(err.Error())-5])
+		return res, err, errcode
 	}
 
 	resp_create, err := cli.ContainerCreate(ctx, &container.Config{Image: imageid}, &container.HostConfig{}, nil, nil, "cpp_executor")
 	if err != nil {
+		fmt.Println("create container error")
 		return "", err, entity.PROCESS_SERVER_ERROR
 	}
 
 	if err := cli.ContainerStart(ctx, resp_create.ID, types.ContainerStartOptions{}); err != nil {
+		fmt.Println("start container error")
 		return "", err, entity.PROCESS_SERVER_ERROR
 	}
 	defer cli.ContainerRemove(ctx, resp_create.ID, types.ContainerRemoveOptions{})
@@ -114,16 +114,16 @@ func (e *ExecutorCPP) ExecuteFromSource(source string) (output string, err error
 	if err != nil {
 		return "", err, entity.PROCESS_SERVER_ERROR
 	}
-
 	logsAsBytes, err := io.ReadAll(reader)
 	if err != nil {
 		return "", nil, entity.PROCESS_SERVER_ERROR
 	}
-
 	result := string(logsAsBytes)
 	result = strings.ReplaceAll(result, "\u0000", "")
 	result = strings.ReplaceAll(result, "\u0001", "")
 	result = strings.ReplaceAll(result, "\u0002", "")
+	result = strings.ReplaceAll(result, "\u0003", "")
+	result = strings.ReplaceAll(result, "\u0004", "")
 	result = strings.Replace(result, "\r", "", 1)
 
 	return result, nil, entity.PROCESS_OK
