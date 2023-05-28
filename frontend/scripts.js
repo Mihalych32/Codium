@@ -47,6 +47,7 @@ const submitCode = async () => {
     const serverAnswer = await codeResponse.json();
     const serverResponseArea = document.getElementById('serverResponse');
     serverResponseArea.innerText = serverAnswer.Result;
+    serverResponseArea.classList.add('if-server-error-area');
   }
 }
 
