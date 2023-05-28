@@ -1,4 +1,3 @@
-
 let text = "";
 
 document.addEventListener('keydown', function (event) {
@@ -26,26 +25,33 @@ textarea.addEventListener('input', function (event) {
   text = this.value;
 });
 
-const submitCode = async () => {
-	const codeResponse = await fetch(`http://localhost:8080/api/submit/`, {
-    method: "POST",
-	body: JSON.stringify({
-      	lang_slug: "cpp",
-      	content: text
-    	})
-  	});
-
-  	if (codeResponse.status === 200) {
-    	const serverAnswer = await codeResponse.json();
-    	let result = serverAnswer.Result;
-		const serverResponseArea = document.getElementById('serverResponse');
-   		serverResponseArea.innerText = serverAnswer.Result;
- 	} else if (codeResponse.status === 422) {
-    	const serverAnswer = await codeResponse.json();
-    	const serverResponseArea = document.getElementById('serverResponse');
-		serverResponseArea.innerText = serverAnswer.Result;
-  	}
+const clearCode = () => {
+  document.getElementById('codeArea').value = '';
 }
+
+const submitCode = async () => {
+  const codeResponse = await fetch(`http://localhost:8080/api/submit/`, {
+    method: "POST",
+    body: JSON.stringify({
+      lang_slug: "cpp",
+      content: text
+    })
+  });
+
+  if (codeResponse.status === 200) {
+    const serverAnswer = await codeResponse.json();
+    let result = serverAnswer.Result;
+    const serverResponseArea = document.getElementById('serverResponse');
+    serverResponseArea.innerText = serverAnswer.Result;
+  } else if (codeResponse.status === 422) {
+    const serverAnswer = await codeResponse.json();
+    const serverResponseArea = document.getElementById('serverResponse');
+    serverResponseArea.innerText = serverAnswer.Result;
+  }
+}
+
+let clearButton = document.getElementById('clr');
+clearButton.addEventListener('click', clearCode);
 
 let submitButton = document.getElementById('sbmt');
 submitButton.addEventListener('click', submitCode);
