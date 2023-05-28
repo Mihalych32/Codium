@@ -125,6 +125,7 @@ func (e *ExecutorCPP) ExecuteFromSource(source string) (output string, err error
 	result = strings.ReplaceAll(result, "\u0002", "")
 	result = strings.ReplaceAll(result, "\u0003", "")
 	result = strings.ReplaceAll(result, "\u0004", "")
+	result = strings.ReplaceAll(result, "\u0006", "")
 	result = strings.Replace(result, "\r", "", 1)
 
 	return result, nil, entity.PROCESS_OK
