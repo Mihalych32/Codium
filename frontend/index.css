@@ -1,7 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@500&family=Ubuntu+Mono&display=swap');
+
 .body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  font-family: 'Lora', serif;
 }
 
 .header {
@@ -22,7 +25,6 @@ h2 {
 .client-block__header {
   display: flex;
   align-items: center;
-  /* flex-direction:column */
 }
 
 .clear-button {
@@ -37,7 +39,7 @@ h2 {
 }
 
 .code-area {
-  width: 100%;
+  font-family: 'Ubuntu Mono', monospace !important;
   height: 300px;
   width: 500px;
   max-width: 500px;
@@ -50,6 +52,22 @@ h2 {
   border-radius: 4px;
   resize: none;
   box-sizing: border-box;
+}
+
+.if-server-error-area {
+  font-family: 'Ubuntu Mono', monospace !important;
+  height: 300px;
+  width: 500px;
+  max-width: 500px;
+  padding: 10px;
+  font-family: monospace;
+  font-size: 14px;
+  background-color: #000;
+  border-radius: 4px;
+  resize: none;
+  box-sizing: border-box;
+  border: 2px solid red;
+  color: red;
 }
 
 .submit-button {
