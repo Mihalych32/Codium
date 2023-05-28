@@ -74,6 +74,7 @@ func (e *ExecutorCPP) ExecuteFromSource(source string) (output string, err error
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
 	defer cancel()
+	cli.ContainerRemove(ctx, "cpp_executor", types.ContainerRemoveOptions{})
 
 	tar, err := archive.TarWithOptions(".", &archive.TarOptions{})
 	if err != nil {
