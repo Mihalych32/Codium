@@ -43,6 +43,7 @@ const submitCode = async () => {
     let result = serverAnswer.Result;
     const serverResponseArea = document.getElementById('serverResponse');
     serverResponseArea.innerText = serverAnswer.Result;
+    serverResponseArea.classList.remove('if-server-error-area');
   } else if (codeResponse.status === 422) {
     const serverAnswer = await codeResponse.json();
     const serverResponseArea = document.getElementById('serverResponse');
