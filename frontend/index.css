@@ -9,15 +9,37 @@
   color: yellow;
 }
 
+h2 {
+  color:bisque;
+  text-shadow: #000;
+}
+
 .content {
   display: flex;
   gap: 100px;
 }
 
+.client-block__header {
+  display: flex;
+  align-items: center;
+  /* flex-direction:column */
+}
+
+.clear-button {
+  width: 100px;
+  height: fit-content;
+  margin: 0px 0px 0px 20px;
+  padding: 10px 10px;
+  background-color: yellow;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
 .code-area {
   width: 100%;
   height: 300px;
-  width: 300px;
+  width: 500px;
   max-width: 500px;
   padding: 10px;
   font-family: monospace;
@@ -37,4 +59,5 @@
   height: 50px;
   border-radius: 10px;
   margin: 20px 0px 0px 0px;
+  cursor: pointer;
 }

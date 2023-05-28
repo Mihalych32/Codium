@@ -14,12 +14,17 @@
     </header>
     <div class="content">
       <div class="client-block">
-        <textarea class="code-area" id="codeArea" wrap="off" placeholder="Введите свой код здесь..."></textarea>
+        <div class="client-block__header">
+          <h2>Client</h2>
+          <button class="clear-button" id="clr">
+            Clear text
+          </button>
+        </div>
+        <textarea class="code-area" id="codeArea" wrap="off" placeholder="Type here..."></textarea>
       </div>
       <div class="server-block">
-        <div class="code-area" id="serverResponse">
-
-        </div>
+        <h2>Server</h2>
+        <div class="code-area" id="serverResponse"></div>
       </div>
     </div>
     <footer class="footer">
